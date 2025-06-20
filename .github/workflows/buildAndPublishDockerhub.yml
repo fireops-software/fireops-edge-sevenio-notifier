@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: fireops/fireops-edge-core-notifier:${{ vars.VERSION }}
+          tags: fireops/fireops-edge-sevenio-notifier:${{ vars.VERSION }}
           context: .
       
       - name: Create git tag
