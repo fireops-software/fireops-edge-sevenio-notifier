@@ -13,6 +13,11 @@ import (
 	"github.com/uoul/go-common/messaging"
 )
 
+const (
+	VERSION      = "{VERSION}"
+	SERVICE_NAME = "fireops-edge-sevenio-notifier"
+)
+
 func main() {
 	// Create AppContext
 	ctx, cancel := context.WithCancel(context.Background())
@@ -66,6 +71,19 @@ func main() {
 		services.WithSevenIoGroupFull(
 			cp.StringOrDefault("SMS_GROUP_EXTENDED", "Kommando"),
 		),
+	)
+
+	// Create HealthReporter
+	services.NewHealthReporter(
+		ctx,
+		logger,
+		rabbitMq,
+		messaging.RabbitMqExchange{
+			Type:       "topic",
+			Exchange:   cp.StringOrDefault("RABBITMQ_HEALTH_EXCHANGE", "fireops-edge-health"),
+			RoutingKey: cp.StringOrDefault("RABBITMQ_HEALTH_ROUTING_KEY", ""),
+		},
+		SERVICE_NAME,
 	)
 
 	// Show run message

@@ -1,4 +1,13 @@
-FROM alpine:latest AS build-stage
+FROM --platform=${BUILDPLATFORM} node:alpine AS build-stage
+
+# get target platform
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+# get target platform
+ARG TARGETOS
+ARG TARGETARCH
 
 # install golang
 WORKDIR /
@@ -11,7 +20,7 @@ ENV PATH=$PATH:/go/bin
 # set workdir for project
 WORKDIR /app
 COPY . .
-RUN go build -o fireops-edge-sevenio-notifier main.go
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o fireops-edge-sevenio-notifier main.go
 
 # Deploy the application binary into a lean image
 FROM alpine:latest AS build-release-stage
