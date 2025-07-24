@@ -58,8 +58,8 @@ func main() {
 		rabbitMq,
 		messaging.RabbitMqExchange{
 			Type:       "topic",
-			Exchange:   cp.StringOrDefault("RABBITMQ_EXCHANGE", "fireops-edge-alerts"),
-			RoutingKey: cp.StringOrDefault("RABBITMQ_ROUTING_KEY", "new"),
+			Exchange:   cp.StringOrDefault("RABBITMQ_EXCHANGE", "fireops-edge-events"),
+			RoutingKey: cp.StringOrDefault("RABBITMQ_ROUTING_KEY", "alu2g.new"),
 		},
 		sevenIoClient,
 		services.WithSevenIoAlertText(

@@ -36,18 +36,18 @@ func (s *SevenIoNotifier) run() {
 		case <-s.ctx.Done():
 			return
 		case msg := <-sub:
-			s.logger.Tracef("New incomming message from rabbitmq: %v", msg.Result.Body)
+			s.logger.Debugf("New incomming message from rabbitmq: %v", msg.Result.Body)
 			if msg.Error != nil {
 				s.logger.Errorf("failed to receive message from messenger - %v", msg.Error)
 				continue
 			}
-			wasMsg := &domain.WasMsg{}
-			err := json.Unmarshal(msg.Result.Body, wasMsg)
+			events := []domain.Event{}
+			err := json.Unmarshal(msg.Result.Body, &events)
 			if err != nil {
 				s.logger.Errorf("failed to parse incomming message as json - %v", err)
 				continue
 			}
-			if err = s.sendSms(wasMsg); err != nil {
+			if err = s.sendSms(events); err != nil {
 				s.logger.Errorf("failed to send sms - %v", err)
 				continue
 			}
@@ -56,35 +56,34 @@ func (s *SevenIoNotifier) run() {
 
 }
 
-func (s *SevenIoNotifier) sendSms(wasMsg *domain.WasMsg) error {
+func (s *SevenIoNotifier) sendSms(events []domain.Event) error {
 	// Send sms with default information
-	s.logger.Tracef("Send sms to default group(%s)...", s.groupDefaultInfo)
+	s.logger.Debugf("Send sms to default group(%s)...", s.groupDefaultInfo)
 	r := <-s.sevenIoApi.SendSms(s.sender, s.groupDefaultInfo, s.alertText)
 	if r.Error != nil {
 		return r.Error
 	}
 	// Send sms with full information
-	s.logger.Tracef("Send sms to extended group(%s)...", s.groupFullInfo)
-	r = <-s.sevenIoApi.SendSms(s.sender, s.groupFullInfo, createAlertInfoText(wasMsg))
+	s.logger.Debugf("Send sms to extended group(%s)...", s.groupFullInfo)
+	r = <-s.sevenIoApi.SendSms(s.sender, s.groupFullInfo, createAlertInfoText(events))
 	if r.Error != nil {
 		return r.Error
 	}
 	return nil
 }
 
-func createAlertInfoText(wasMsg *domain.WasMsg) string {
+func createAlertInfoText(events []domain.Event) string {
 	var sb strings.Builder
-	templateStr := "\nNr.: %s\nArt: %s\nAnrufer: %s\nTel.: %s\nOrt: %s\nInfo: %s\n"
-	for alertNo, alert := range wasMsg.Alerts {
+	templateStr := "Nr.: %s\nArt: %s\nAnrufer: %s\nTel.: %s\nOrt: %s\nInfo: %s\n"
+	for _, e := range events {
 		sb.WriteString(fmt.Sprintf(
 			templateStr,
-			alertNo,
-			alert.OperationName,
-			alert.Contact.Name,
-			alert.Contact.PhoneNumber,
-			alert.Location,
-			alert.Info,
-			//utils.CreateGoogleMapsLocationUrl(alert.Location),
+			e.Num1,
+			e.Category,
+			e.CallerName,
+			e.CallerNumber,
+			e.Location,
+			e.EventAlarmtext,
 		))
 	}
 	return sb.String()
