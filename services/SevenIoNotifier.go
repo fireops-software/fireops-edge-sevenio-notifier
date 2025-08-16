@@ -78,12 +78,12 @@ func createAlertInfoText(events []domain.Event) string {
 	for _, e := range events {
 		sb.WriteString(fmt.Sprintf(
 			templateStr,
-			e.Num1,
-			e.Category,
-			e.CallerName,
-			e.CallerNumber,
-			e.Location,
-			e.EventAlarmtext,
+			valueOrDefault(e.Num1),
+			valueOrDefault(e.Category),
+			valueOrDefault(e.CallerName),
+			valueOrDefault(e.CallerNumber),
+			valueOrDefault(e.Location),
+			valueOrDefault(e.EventAlarmtext),
 		))
 	}
 	return sb.String()
@@ -111,6 +111,13 @@ func WithSevenIoAlertText(alertText string) func(*SevenIoNotifier) {
 	return func(sin *SevenIoNotifier) {
 		sin.alertText = alertText
 	}
+}
+
+func valueOrDefault[T any](v *T) T {
+	if v != nil {
+		return *v
+	}
+	return *new(T)
 }
 
 func NewSevenIoNotifier(
