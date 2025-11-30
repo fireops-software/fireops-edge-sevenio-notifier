@@ -16,6 +16,7 @@ import (
 const (
 	VERSION      = "{VERSION}"
 	SERVICE_NAME = "fireops-edge-sevenio-notifier"
+	DISPLAY_NAME = "SMS"
 )
 
 func main() {
@@ -59,7 +60,7 @@ func main() {
 		messaging.RabbitMqExchange{
 			Type:       "topic",
 			Exchange:   cp.StringOrDefault("RABBITMQ_EXCHANGE", "fireops-edge-events"),
-			RoutingKey: cp.StringOrDefault("RABBITMQ_ROUTING_KEY", "alu2g.new"),
+			RoutingKey: cp.StringOrDefault("RABBITMQ_ROUTING_KEY", "new"),
 		},
 		sevenIoClient,
 		services.WithSevenIoAlertText(
@@ -84,6 +85,7 @@ func main() {
 			RoutingKey: cp.StringOrDefault("RABBITMQ_HEALTH_ROUTING_KEY", ""),
 		},
 		SERVICE_NAME,
+		DISPLAY_NAME,
 	)
 
 	// Show run message

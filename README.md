@@ -11,7 +11,7 @@ All configuration is done via environmental variables because the intended form 
 | RABBITMQ_USER |  | RabbitMQ user |
 | RABBITMQ_PW |  | RabbitMQ password |
 | RABBITMQ_EXCHANGE | fireops-edge-events | RabbitMQ Exchange, where alerts will be published |
-| RABBITMQ_ROUTING_KEY | alu2g.new | RabbitMQ routing key for all changes on currently active alerts |
+| RABBITMQ_ROUTING_KEY | new | RabbitMQ routing key for all changes on currently active alerts |
 | RABBITMQ_HEALTH_EXCHANGE | fireops-edge-health | RabbitMQ exchange for health messages |
 | RABBITMQ_HEALTH_ROUTING_KEY |  | RabbitMQ routing key for health messages |
 ||||
