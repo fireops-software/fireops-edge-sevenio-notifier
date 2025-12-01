@@ -40,6 +40,7 @@ LP1:
 			}
 			currentState := &domain.Health{
 				ServiceName: h.serviceName,
+				DisplayName: h.displayName,
 				Timestamp:   time.Now(),
 				State:       s,
 				Errors:      collections.MapSlice(e, func(e error) string { return e.Error() }),
