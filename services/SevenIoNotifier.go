@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/fireops-software/fireops-edge-sevenio-notifier/api"
@@ -11,6 +12,10 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/uoul/go-common/log"
 	"github.com/uoul/go-common/messaging"
+)
+
+const (
+	NUM1_REGEX = `E\d+`
 )
 
 type SevenIoNotifier struct {
@@ -25,6 +30,7 @@ type SevenIoNotifier struct {
 	groupFullInfo    string
 	groupDefaultInfo string
 	alertText        string
+	num1RegEx        *regexp.Regexp
 }
 
 func (s *SevenIoNotifier) run() {
@@ -57,6 +63,10 @@ func (s *SevenIoNotifier) run() {
 }
 
 func (s *SevenIoNotifier) sendSms(events []domain.Event) error {
+	// Filter only real events (num_1 starts with Exxxxxxx)
+	if !s.isRealEvent(events) {
+		return nil // Nothing to do
+	}
 	// Send sms with default information
 	s.logger.Debugf("Send sms to default group(%s)...", s.groupDefaultInfo)
 	r := <-s.sevenIoApi.SendSms(s.sender, s.groupDefaultInfo, s.alertText)
@@ -70,6 +80,20 @@ func (s *SevenIoNotifier) sendSms(events []domain.Event) error {
 		return r.Error
 	}
 	return nil
+}
+
+func (s *SevenIoNotifier) isRealEvent(events []domain.Event) bool {
+	for _, e := range events {
+		// Check if num_1 is set
+		if e.Num1 == nil {
+			continue
+		}
+		// Check if num_1 satisfies the pattern
+		if s.num1RegEx.MatchString(*e.Num1) {
+			return true
+		}
+	}
+	return false
 }
 
 func createAlertInfoText(events []domain.Event) string {
@@ -135,6 +159,7 @@ func NewSevenIoNotifier(
 		messenger:  messenger,
 		exchange:   exchange,
 		sevenIoApi: sevenIoApi,
+		num1RegEx:  regexp.MustCompile(NUM1_REGEX),
 
 		sender:           "FireOps",
 		groupFullInfo:    "Kommando",
